@@ -1,19 +1,14 @@
 package com.kitsunesoftware.fractalmusic.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.util.Vector;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,26 +19,21 @@ import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.JTableHeader;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import com.kitsunesoftware.fractalmusic.FractalMusic;
+import com.kitsunesoftware.fractalmusic.FractalMusic.InvalidInstrumentException;
 import com.kitsunesoftware.fractalmusic.Key;
 import com.kitsunesoftware.fractalmusic.KeyCollection;
 import com.kitsunesoftware.fractalmusic.MidiPlayer;
 import com.kitsunesoftware.fractalmusic.Voice;
 import com.kitsunesoftware.fractalmusic.generic.WeightedRandomCollection;
 import com.kitsunesoftware.fractalmusic.motif.Motif;
-
-import java.util.Random;
-import java.util.Vector;
 
 public class MainWindow extends JFrame implements ActionListener {
 	
@@ -214,7 +204,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		String splitStrings[] = newValue.split(",\\W*");
 		Key result[] = new Key[splitStrings.length];
 		for (int i=0; i<splitStrings.length; ++i) {
-			result[i] = Key.keyByName(splitStrings[i]);
+			result[i] = Key.allKeys.get(splitStrings[i]);
 		}
 		return result;
 	}
@@ -260,7 +250,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	}
 	
 	public void addSliderField(JPanel p, String labelString, int minimumValue, int maximumValue, int defaultValue, ChangeListener changeListener) {
-		int majorTickSpacing = 50;
+		int majorTickSpacing = 100;
 		addSliderField(p, labelString, minimumValue, maximumValue, majorTickSpacing, defaultValue, changeListener);
 	}
 	
@@ -292,13 +282,15 @@ public class MainWindow extends JFrame implements ActionListener {
 		}
 		try {
 			midiPlayer = new MidiPlayer( fractalMusic.toMIDI() );
+			midiPlayer.play();
 		} catch (MidiUnavailableException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InvalidMidiDataException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (InvalidInstrumentException e) {
+			JOptionPane.showMessageDialog(null, e.getLocalizedMessage());
 		}
-		if (midiPlayer!=null) midiPlayer.play();
 	}
 }

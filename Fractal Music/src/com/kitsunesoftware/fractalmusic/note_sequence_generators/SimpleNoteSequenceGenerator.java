@@ -62,8 +62,9 @@ public class SimpleNoteSequenceGenerator {
 			if (notePitchIsFromMotif.get(beatIndex)) {
 				baseNoteLikeValue = motif.getCurrentNoteLikeValue();
 				motif.moveForwardWithinMotif();
+			} else {
+				baseNoteLikeValue = improviser.getNoteLikeValueForBeat(motif, beatIndex);
 			}
-			else baseNoteLikeValue = improviser.getNoteLikeValueForBeat(motif, beatIndex);
 			// We may (or may not) want to play a chord. We can generalise chords to include single notes, so this works in both cases.
 			int midiNotes[] = chordRenderer.getCurrentMIDINotes(baseNoteLikeValue, key, octave, transposition);
 			for (int chordIndex=0; chordIndex<midiNotes.length; ++chordIndex) {

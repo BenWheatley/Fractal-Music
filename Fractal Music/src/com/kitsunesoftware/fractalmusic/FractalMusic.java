@@ -91,7 +91,7 @@ public class FractalMusic {
 		Improviser improvisers[] = {new CopyImproviser(), new Improviser(new Random(random.nextLong()))};
 		ImproviserCollection improviserCollection = new ImproviserCollection(improvisers);
 		
-		String instrument = "Piano";
+		String instrument = "None";
 		
 		int volumeMinimum = 30, volumeMaximum = 50, volumeChangeCount = 8;
 
@@ -170,8 +170,10 @@ public class FractalMusic {
 		track.add(new MidiEvent(msg, startTimeInTicks+durationInTicks));
 	}
 	
-	private Track trackBuilder(Sequence result_sequence, int channel, String instrument) throws IllegalArgumentException, InvalidMidiDataException {
-		if (instrument=="None") return null;
+	private Track trackBuilder(Sequence result_sequence, int channel, String instrument) throws InvalidInstrumentException, InvalidMidiDataException {
+		if (instrument=="None") {
+			throw new InvalidInstrumentException("'None' is not a real instrument.");
+		}
 		Track result_track = result_sequence.createTrack();
 		setInstrumentForTrack(result_track, channel, instrument);
 		return result_track;
@@ -203,7 +205,9 @@ public class FractalMusic {
 	
 	private void setInstrumentForTrack(Track track, int channel, String instrumentName) throws IllegalArgumentException, InvalidMidiDataException {
 		Instrument instrument = getInstrument(instrumentName);
-		if (instrument==null) throw new IllegalArgumentException(INSTRUMENT_NOT_FOUND);
+		if (instrument==null) {
+			throw new IllegalArgumentException(INSTRUMENT_NOT_FOUND);
+		}
 		Patch instrumentPatch = instrument.getPatch();
 		int instrument_value = instrumentPatch.getProgram();
 		ShortMessage msg = new ShortMessage();
@@ -215,12 +219,14 @@ public class FractalMusic {
 		return keys.chooseItemFromCollection();
 	}
 	
-	public Sequence toMIDI() throws InvalidMidiDataException {
+	public Sequence toMIDI() throws InvalidMidiDataException, InvalidInstrumentException {
 		Sequence result = new Sequence(Sequence.PPQ, TICKS_PER_BEAT);
 		
-		for (Voice voice : voices) {
-			if (null==voice.renderer) voice.renderer = new VoiceRenderer();
-			int channel = voices.indexOf(voice);//MIDI_CHANNEL_MELODY
+		for (int channel = 0; channel < voices.size(); channel++) {
+			Voice voice = voices.elementAt(channel);
+			if (null==voice.renderer) {
+				voice.renderer = new VoiceRenderer();
+			}
 			voice.renderer.track = trackBuilder(result, channel, voice.instrument);
 		}
 		
@@ -320,5 +326,11 @@ public class FractalMusic {
 		}
 		
 		return result;
+	}
+	
+	public class InvalidInstrumentException extends RuntimeException {
+		public InvalidInstrumentException(String string) {
+			super(string);
+		}
 	}
 }
